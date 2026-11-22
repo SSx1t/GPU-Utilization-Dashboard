@@ -1,0 +1,124 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam nodesep 35
+skinparam ranksep 45
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #234164
+  HeaderBackgroundColor #CDDEF0
+  ArrowColor #234164
+  FontStyle bold
+}
+skinparam package {
+  BackgroundColor #EBF2FA
+  BorderColor #96AABE
+  FontColor #234164
+  FontSize 14
+}
+skinparam titleFontSize 16
+skinparam titleFontColor #234164
+left to right direction
+title Jobs and allowances (Person 2): attributes and methods
+package "Jobs and allowances (Person 2)" <<Rectangle>> {
+class Job {
+  -jobId : int
+  -studentId : String
+  -title : String
+  -applicationName : String
+  -description : String
+  -taskSize : String
+  -workloadUnits : int
+  -estimatedDuration : int
+  -submissionTime : String
+  -status : String
+  -assignedGpuId : int
+  -startTime : String
+  -finishTime : String
+  -cancellationTime : String
+  -cancelledBy : String
+  -cancellationReason : String
+  -chargedMinutes : int
+  -settled : boolean
+  +Job(jobId : int, studentId : String, title : String, applicationName : String, description : String, taskSize : String, submissionTime : String)
+  -setTaskSize(taskSize : String)
+  +getJobId() : int
+  +getStudentId() : String
+  +getTitle() : String
+  +getApplicationName() : String
+  +getDescription() : String
+  +getTaskSize() : String
+  +getWorkloadUnits() : int
+  +getEstimatedDuration() : int
+  +getSubmissionTime() : String
+  +getStatus() : String
+  +getAssignedGpuId() : int
+  +getStartTime() : String
+  +getFinishTime() : String
+  +getCancellationTime() : String
+  +getCancelledBy() : String
+  +getCancellationReason() : String
+  +getChargedMinutes() : int
+  +isSettled() : boolean
+  +startJob(gpuId : int, startTime : String) : boolean
+  +completeJob(finishTime : String) : boolean
+  +cancelJob(cancellationTime : String, cancelledBy : String, cancellationReason : String) : boolean
+  +settleJob(chargedMinutes : int)
+  +toString() : String
+}
+class JobManager {
+  -jobs : ArrayList<Job>
+  -allowances : ArrayList<TimeAllowance>
+  -nextJobId : int
+  -lastMessage : String
+  +JobManager()
+  +getJobs() : ArrayList<Job>
+  +getAllowances() : ArrayList<TimeAllowance>
+  +getLastMessage() : String
+  #setLastMessage(message : String)
+  +addStudentAllowance(allowance : TimeAllowance) : boolean
+  +findAllowance(studentId : String) : TimeAllowance
+  +findJob(jobId : int) : Job
+  +submitJob(studentId : String, title : String, applicationName : String, description : String, taskSize : String, submissionTime : String) : Job
+  +getStudentJobs(studentId : String) : ArrayList<Job>
+  +searchStudentJobs(studentId : String, keyword : String) : ArrayList<Job>
+  +cancelJob(jobId : int, cancelledBy : String, reason : String, cancellationTime : String, elapsedRuntime : int) : boolean
+  +completeJob(jobId : int, finishTime : String) : boolean
+  +grantExtraTime(studentId : String, minutes : int, reason : String, time : String) : boolean
+  +addLoadedJob(job : Job)
+}
+class TimeAllowance {
+  -studentId : String
+  -allocatedMinutes : int
+  -usedMinutes : int
+  -reservedMinutes : int
+  -grantHistory : ArrayList<String>
+  +TimeAllowance(studentId : String)
+  +TimeAllowance(studentId : String, allocatedMinutes : int, usedMinutes : int, reservedMinutes : int)
+  +getStudentId() : String
+  +getAllocatedMinutes() : int
+  +getUsedMinutes() : int
+  +getReservedMinutes() : int
+  +getAvailableMinutes() : int
+  +getGrantHistory() : ArrayList<String>
+  +reserveMinutes(duration : int) : boolean
+  +releaseReservation(duration : int) : boolean
+  +settleTime(reservedDuration : int, chargedMinutes : int) : boolean
+  +grantExtraTime(minutes : int, reason : String, time : String) : boolean
+  +adjustAllocatedMinutes(newAmount : int) : boolean
+  +toString() : String
+}
+}
+package "Related classes (see their own diagrams)" <<Rectangle>> {
+class IntegratedJobManager
+hide IntegratedJobManager members
+class Student
+hide Student members
+}
+Student --> "1" TimeAllowance : timeAllowance
+JobManager "1" o-- "*" Job : jobs
+JobManager "1" o-- "*" TimeAllowance : allowances
+JobManager <|-- IntegratedJobManager
+@enduml

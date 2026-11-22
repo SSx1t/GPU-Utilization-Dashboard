@@ -299,6 +299,20 @@ public class StudentDashboardPanel extends JPanel implements ActionListener {
         String description = descriptionArea.getText();
         String taskSize = (String) taskSizeBox.getSelectedItem();
 
+        // Ask the student to confirm the duration before the minutes are reserved.
+        // Skipped when a field is empty, so that JobManager can say what is missing.
+        if (!title.trim().isEmpty() && !application.trim().isEmpty() && !description.trim().isEmpty()) {
+            int choice = JOptionPane.showConfirmDialog(this,
+                    "Task size: " + taskSize + "\nDuration: " + durationLabel.getText()
+                    + "\n\nThe full duration will be reserved from your available minutes."
+                    + "\nSubmit this job?",
+                    "Confirm job duration", JOptionPane.YES_NO_OPTION);
+
+            if (choice != JOptionPane.YES_OPTION) {
+                return;
+            }
+        }
+
         Job job = manager.submitJob(studentId, title, application, description, taskSize, simulationTime);
 
         JOptionPane.showMessageDialog(this, manager.getLastMessage());

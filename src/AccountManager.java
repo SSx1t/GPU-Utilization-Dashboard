@@ -147,6 +147,37 @@ public class AccountManager {
         return currentUser;
     }
 
+    // Returns the approved student accounts. The list is a copy, so callers cannot change it.
+    public ArrayList<Student> getStudents() {
+        ArrayList<Student> students = new ArrayList<Student>();
+
+        for (int i = 0; i < users.size(); i++) {
+            if (users.get(i) instanceof Student) {
+                students.add((Student) users.get(i));
+            }
+        }
+
+        return students;
+    }
+
+    // Finds an approved student by university ID, ignoring case. Returns null if not found.
+    public Student findStudent(String id) {
+        ArrayList<Student> students = getStudents();
+
+        for (int i = 0; i < students.size(); i++) {
+            if (students.get(i).getUsername().equalsIgnoreCase(id)) {
+                return students.get(i);
+            }
+        }
+
+        return null;
+    }
+
+    // Returns all registration requests (pending, approved and rejected) as a copy.
+    public ArrayList<AccessRequest> getRequests() {
+        return new ArrayList<AccessRequest>(requests);
+    }
+
     // Restricts administrator operations to an administrator session.
     private void requireAdmin() throws AccountException {
         if (!(currentUser instanceof Administrator)) {

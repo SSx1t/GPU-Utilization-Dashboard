@@ -1,0 +1,135 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam nodesep 35
+skinparam ranksep 45
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #234164
+  HeaderBackgroundColor #CDDEF0
+  ArrowColor #234164
+  FontStyle bold
+}
+skinparam package {
+  BackgroundColor #EBF2FA
+  BorderColor #96AABE
+  FontColor #234164
+  FontSize 14
+}
+skinparam titleFontSize 16
+skinparam titleFontColor #234164
+title Scheduler, GPUs and clock (Person 3): attributes and methods
+package "Scheduler and clock (Person 3)" <<Rectangle>> {
+class Scheduler {
+  {static} +GPU_COUNT : int
+  {static} +QUEUED : String
+  {static} +RUNNING : String
+  {static} +COMPLETED : String
+  {static} +CANCELLED : String
+  -clock : SimulationClock
+  -gpus : GPU[]
+  -queue : ArrayList<Job>
+  -history : ArrayList<Job>
+  -listener : SchedulerListener
+  -totalBusyGpuMinutes : int
+  +Scheduler(clock : SimulationClock)
+  +setListener(listener : SchedulerListener)
+  +getClock() : SimulationClock
+  +getGpus() : GPU[]
+  +getGpu(id : int) : GPU
+  +getQueue() : ArrayList<Job>
+  +getHistory() : ArrayList<Job>
+  +submit(job : Job)
+  +advanceMinute()
+  -dispatch()
+  -sortQueue()
+  +cancelQueued(job : Job, by : String, reason : String) : boolean
+  +cancelRunning(job : Job, by : String, reason : String) : boolean
+  -runningGpuOf(job : Job) : GPU
+  +predictQueue() : ArrayList<QueuePrediction>
+  +getTotalBusyGpuMinutes() : int
+  +busyGpuCount() : int
+  +utilisationPercent() : double
+  +utilisationText() : String
+  +countByStatus(status : String) : int
+  +restoreBusyMinutes(totalBusyGpuMinutes : int)
+  +registerRestoredJob(job : Job, minutesRun : int)
+}
+class GPU {
+  -id : int
+  -currentJob : Job
+  -minutesRun : int
+  -startedAt : LocalDateTime
+  +GPU(id : int)
+  +getId() : int
+  +isFree() : boolean
+  +isBusy() : boolean
+  +getCurrentJob() : Job
+  +getMinutesRun() : int
+  +start(job : Job, startedAt : LocalDateTime)
+  +tick()
+  +remainingRuntime() : int
+  +isFinished() : boolean
+  +expectedFinish() : LocalDateTime
+  +release() : Job
+  +restore(job : Job, minutesRun : int, startedAt : LocalDateTime)
+  +toString() : String
+}
+class SimulationClock {
+  {static} +FMT : DateTimeFormatter
+  -start : LocalDateTime
+  -now : LocalDateTime
+  -elapsedMinutes : int
+  -initialised : boolean
+  +SimulationClock()
+  +initialise(startTime : LocalDateTime)
+  +initialiseFromText(text : String)
+  +advance()
+  +isInitialised() : boolean
+  +now() : LocalDateTime
+  +getStart() : LocalDateTime
+  +getElapsedMinutes() : int
+  +formattedNow() : String
+  {static} +format(t : LocalDateTime) : String
+  +restore(start : LocalDateTime, now : LocalDateTime, elapsedMinutes : int)
+  -requireInitialised()
+}
+class QueuePrediction {
+  -job : Job
+  -position : int
+  -predictedGpuId : int
+  -predictedStart : LocalDateTime
+  -predictedFinish : LocalDateTime
+  -remainingWaitMinutes : int
+  +QueuePrediction(job : Job, position : int, predictedGpuId : int, predictedStart : LocalDateTime, predictedFinish : LocalDateTime, remainingWaitMinutes : int)
+  +getJob() : Job
+  +getPosition() : int
+  +getPredictedGpuId() : int
+  +getPredictedStart() : LocalDateTime
+  +getPredictedFinish() : LocalDateTime
+  +getRemainingWaitMinutes() : int
+}
+interface SchedulerListener {
+  +onJobCompleted(job : Job, runtimeMinutes : int)
+  +onRunningCancelled(job : Job, runtimeMinutes : int)
+  +onQueuedCancelled(job : Job)
+}
+}
+package "Related classes (see their own diagrams)" <<Rectangle>> {
+class Job
+hide Job members
+class IntegratedJobManager
+hide IntegratedJobManager members
+}
+SchedulerListener <|.. IntegratedJobManager
+IntegratedJobManager --> "1" Scheduler : scheduler
+Scheduler "1" *-- "4" GPU : gpus
+Scheduler --> "1" SimulationClock : clock
+Scheduler o-- "*" Job : queue / history
+Scheduler --> "0..1" SchedulerListener : listener
+Scheduler ..> QueuePrediction : creates
+GPU --> "0..1" Job : currentJob
+QueuePrediction --> "1" Job : job
+@enduml

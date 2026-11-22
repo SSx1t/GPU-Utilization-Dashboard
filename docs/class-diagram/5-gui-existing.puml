@@ -1,0 +1,144 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam nodesep 35
+skinparam ranksep 45
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #234164
+  HeaderBackgroundColor #CDDEF0
+  ArrowColor #234164
+  FontStyle bold
+}
+skinparam package {
+  BackgroundColor #EBF2FA
+  BorderColor #96AABE
+  FontColor #234164
+  FontSize 14
+}
+skinparam titleFontSize 16
+skinparam titleFontColor #234164
+left to right direction
+title Account, student and scheduler screens (Persons 1-3): attributes and methods
+package "Screens of Persons 1, 2 and 3" <<Rectangle>> {
+class AccountsGUI <<extends JFrame>> {
+  #manager : AccountManager
+  #jobManager : JobManager
+  -studentDashboard : StudentDashboardPanel
+  #background : Color
+  #headingColor : Color
+  -buttonColor : Color
+  -username : JTextField
+  -loginPassword : JPasswordField
+  -id : JTextField
+  -name : JTextField
+  -email : JTextField
+  -phone : JTextField
+  -password : JPasswordField
+  -confirm : JPasswordField
+  -requestId : JTextField
+  -minutes : JTextField
+  -requestsModel : DefaultTableModel
+  -requests : JTable
+  -loginPanel : JPanel
+  -registrationPanel : JPanel
+  #adminPanel : JPanel
+  +AccountsGUI(manager : AccountManager, jobManager : JobManager)
+  -createPage(title : String) : JPanel
+  -button(text : String) : JButton
+  #showPanel(panel : JPanel)
+  -message(text : String)
+  #refreshRequests()
+  #showAccount()
+  +actionPerformed(event : ActionEvent)
+  {static} +main(args : String[])
+}
+class StudentDashboardPanel <<extends JPanel>> {
+  -background : Color
+  -headingColor : Color
+  -buttonColor : Color
+  -cardColor : Color
+  -studentId : String
+  -simulationTime : String
+  -manager : JobManager
+  -allocatedLabel : JLabel
+  -usedLabel : JLabel
+  -reservedLabel : JLabel
+  -availableLabel : JLabel
+  -titleField : JTextField
+  -applicationField : JTextField
+  -descriptionArea : JTextArea
+  -taskSizeBox : JComboBox<String>
+  -durationLabel : JLabel
+  -submitButton : JButton
+  -cancelButton : JButton
+  -detailsButton : JButton
+  -searchButton : JButton
+  -showAllButton : JButton
+  -searchField : JTextField
+  -jobsTable : JTable
+  -tableModel : DefaultTableModel
+  +StudentDashboardPanel(studentId : String, manager : JobManager)
+  -createAllowancePanel()
+  -createJobFormPanel()
+  -createJobsTable()
+  -createButtonPanel()
+  -allowanceLabel(text : String) : JLabel
+  -addFormRow(panel : JPanel, labelConstraints : GridBagConstraints, fieldConstraints : GridBagConstraints, row : int, text : String, component : Component)
+  -styleButton(button : JButton)
+  +actionPerformed(e : ActionEvent)
+  -updateDuration()
+  -submitJob()
+  -cancelSelectedJob()
+  -showSelectedJobDetails()
+  -calculateElapsedRuntime(job : Job) : int
+  -searchJobs()
+  -clearForm()
+  +refreshAllowance()
+  +refreshJobs(jobs : ArrayList<Job>)
+  +setSimulationTime(simulationTime : String)
+}
+class SchedulerMonitorPanel <<extends JPanel>> {
+  -scheduler : Scheduler
+  -clockLabel : JLabel
+  -startField : JTextField
+  -initButton : JButton
+  -advanceButton : JButton
+  -gpuArea : JTextArea
+  -waitingArea : JTextArea
+  -summaryLabel : JLabel
+  +SchedulerMonitorPanel(scheduler : Scheduler)
+  +actionPerformed(e : ActionEvent)
+  +refresh()
+  -makeArea() : JTextArea
+  -titled(title : String, area : JTextArea) : JPanel
+}
+class SchedulerDemo {
+  {static} -nextJobId : int
+  +SchedulerDemo()
+  {static} +main(args : String[])
+}
+}
+package "Related classes (see their own diagrams)" <<Rectangle>> {
+class AccountManager
+hide AccountManager members
+class JobManager
+hide JobManager members
+class Scheduler
+hide Scheduler members
+class MainFrame
+hide MainFrame members
+}
+AccountsGUI <|-- MainFrame
+AccountsGUI --> "1" AccountManager : manager
+AccountsGUI --> "1" JobManager : jobManager
+AccountsGUI --> "0..1" StudentDashboardPanel : studentDashboard
+MainFrame *-- StudentDashboardPanel
+MainFrame *-- SchedulerMonitorPanel
+StudentDashboardPanel --> "1" JobManager : manager
+SchedulerMonitorPanel --> "1" Scheduler : scheduler
+SchedulerDemo ..> Scheduler : creates
+SchedulerDemo ..> SchedulerMonitorPanel : shows
+@enduml

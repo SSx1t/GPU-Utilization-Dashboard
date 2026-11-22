@@ -1,0 +1,126 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam nodesep 35
+skinparam ranksep 45
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #234164
+  HeaderBackgroundColor #CDDEF0
+  ArrowColor #234164
+  FontStyle bold
+}
+skinparam package {
+  BackgroundColor #EBF2FA
+  BorderColor #96AABE
+  FontColor #234164
+  FontSize 14
+}
+skinparam titleFontSize 16
+skinparam titleFontColor #234164
+title GPU Utilization Management - all classes and relationships\n(<<JFrame>>, <<JPanel>>, <<Exception>> = Java superclass)
+hide members
+package "Main GUI (Person 4)" <<Rectangle>> {
+  class MainApp
+  class MainFrame
+  class ClockPanel <<JPanel>>
+  class AdminDashboardPanel <<JPanel>>
+  class AdminJobsPanel <<JPanel>>
+  class AdminStudentsPanel <<JPanel>>
+  class StudentQueuePanel <<JPanel>>
+  class UiStyle
+}
+package "Screens of Persons 1-3" <<Rectangle>> {
+  class AccountsGUI <<JFrame>>
+  class StudentDashboardPanel <<JPanel>>
+  class SchedulerMonitorPanel <<JPanel>>
+  class SchedulerDemo
+}
+package "Integration and storage (Person 4)" <<Rectangle>> {
+  class GpuSystem
+  class IntegratedJobManager
+  interface SystemChangeListener
+  class StorageManager
+  class StorageException <<Exception>>
+  class JobInfo
+}
+package "Accounts (Person 1)" <<Rectangle>> {
+  abstract class User
+  class Student
+  class Administrator
+  class AccessRequest
+  class AccountManager
+  class AccountException <<Exception>>
+}
+package "Jobs and allowances (Person 2)" <<Rectangle>> {
+  class Job
+  class JobManager
+  class TimeAllowance
+}
+package "Scheduler and clock (Person 3)" <<Rectangle>> {
+  class Scheduler
+  class GPU
+  class SimulationClock
+  class QueuePrediction
+  interface SchedulerListener
+}
+User <|-- Student
+User <|-- Administrator
+Student --> "1" TimeAllowance : timeAllowance
+Student ..> AccessRequest : created from
+AccountManager "1" o-- "*" User : users
+AccountManager "1" o-- "*" AccessRequest : requests
+AccountManager ..> AccountException : throws
+JobManager "1" o-- "*" Job : jobs
+JobManager "1" o-- "*" TimeAllowance : allowances
+JobManager <|-- IntegratedJobManager
+SchedulerListener <|.. IntegratedJobManager
+IntegratedJobManager --> "1" Scheduler : scheduler
+IntegratedJobManager --> "0..1" SystemChangeListener : changeListener
+Scheduler "1" *-- "4" GPU : gpus
+Scheduler --> "1" SimulationClock : clock
+Scheduler o-- "*" Job : queue / history
+Scheduler --> "0..1" SchedulerListener : listener
+Scheduler ..> QueuePrediction : creates
+GPU --> "0..1" Job : currentJob
+QueuePrediction --> "1" Job : job
+SystemChangeListener <|.. GpuSystem
+GpuSystem --> "1" AccountManager : accounts
+GpuSystem --> "1" IntegratedJobManager : jobs
+GpuSystem --> "1" Scheduler : scheduler
+GpuSystem --> "1" SimulationClock : clock
+GpuSystem --> "1" StorageManager : storage
+GpuSystem o-- "*" SystemChangeListener : listeners
+GpuSystem ..> JobInfo : creates
+JobInfo --> "1" Job : job
+StorageManager ..> StorageException : throws
+StorageManager ..> SimulationClock : saves / restores
+StorageManager ..> Scheduler : saves / restores
+StorageManager ..> JobManager : saves / restores
+MainApp ..> GpuSystem : opens
+MainApp ..> MainFrame : shows
+AccountsGUI <|-- MainFrame
+SystemChangeListener <|.. MainFrame
+AccountsGUI --> "1" AccountManager : manager
+AccountsGUI --> "1" JobManager : jobManager
+AccountsGUI --> "0..1" StudentDashboardPanel : studentDashboard
+MainFrame --> "1" GpuSystem : system
+MainFrame *-- AdminDashboardPanel
+MainFrame *-- AdminJobsPanel
+MainFrame *-- AdminStudentsPanel
+MainFrame *-- StudentQueuePanel
+MainFrame *-- "2" ClockPanel
+MainFrame *-- StudentDashboardPanel
+MainFrame *-- SchedulerMonitorPanel
+StudentDashboardPanel --> "1" JobManager : manager
+SchedulerMonitorPanel --> "1" Scheduler : scheduler
+SchedulerDemo ..> Scheduler : creates
+SchedulerDemo ..> SchedulerMonitorPanel : shows
+AdminDashboardPanel --> "1" GpuSystem : system
+AdminJobsPanel --> "1" GpuSystem : system
+AdminStudentsPanel --> "1" GpuSystem : system
+StudentQueuePanel --> "1" GpuSystem : system
+ClockPanel --> "1" GpuSystem : system
+@enduml

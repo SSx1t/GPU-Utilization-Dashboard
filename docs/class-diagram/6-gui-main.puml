@@ -1,0 +1,268 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam nodesep 35
+skinparam ranksep 45
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #234164
+  HeaderBackgroundColor #CDDEF0
+  ArrowColor #234164
+  FontStyle bold
+}
+skinparam package {
+  BackgroundColor #EBF2FA
+  BorderColor #96AABE
+  FontColor #234164
+  FontSize 14
+}
+skinparam titleFontSize 16
+skinparam titleFontColor #234164
+title Main window and dashboards (Person 4): attributes and methods
+package "Main GUI (Person 4)" <<Rectangle>> {
+class MainApp {
+  {static} +DATA_FOLDER : String
+  +MainApp()
+  {static} +main(args : String[])
+  {static} ~openSystem(folderName : String) : GpuSystem
+  {static} -offerBackup(file : File, problem : String) : boolean
+  {static} -error(text : String)
+}
+class MainFrame {
+  {static} -REQUESTS_TAB : int
+  -system : GpuSystem
+  -adminArea : JPanel
+  -adminTabs : JTabbedPane
+  -adminClock : ClockPanel
+  -dashboardPanel : AdminDashboardPanel
+  -jobsPanel : AdminJobsPanel
+  -studentsPanel : AdminStudentsPanel
+  -monitorPanel : SchedulerMonitorPanel
+  -studentArea : JPanel
+  -studentClock : ClockPanel
+  -studentPanel : StudentDashboardPanel
+  -queuePanel : StudentQueuePanel
+  +MainFrame(system : GpuSystem)
+  #showAccount()
+  -createAdminArea() : JPanel
+  -createStudentArea(student : Student) : JPanel
+  -createAreaPage(title : String, subtitle : String, clock : ClockPanel) : JPanel
+  -requestsTabTitle() : String
+  -hideMonitorClockControls(monitor : SchedulerMonitorPanel)
+  -clearAreas()
+  +actionPerformed(event : ActionEvent)
+  +systemChanged(change : String)
+  -refreshScreens()
+  -updateStudentClock()
+  -saveWithMessage()
+  -closeApplication()
+}
+class ClockPanel <<extends JPanel>> {
+  -system : GpuSystem
+  -administrator : boolean
+  -cards : CardLayout
+  {static} -SETUP : String
+  {static} -RUNNING : String
+  {static} -WAITING : String
+  -dateSpinner : JSpinner
+  -timeSpinner : JSpinner
+  -startButton : JButton
+  -advanceButton : JButton
+  -timeLabel : JLabel
+  +ClockPanel(system : GpuSystem, administrator : boolean)
+  -createSetupCard() : JPanel
+  -createRunningCard() : JPanel
+  -createWaitingCard() : JPanel
+  -createSpinner(pattern : String, step : int, columns : int) : JSpinner
+  +refresh()
+  +actionPerformed(event : ActionEvent)
+  -startClock()
+  -warn(text : String)
+}
+class AdminDashboardPanel <<extends JPanel>> {
+  -system : GpuSystem
+  -runningValue : JLabel
+  -queuedValue : JLabel
+  -completedValue : JLabel
+  -cancelledValue : JLabel
+  -busyValue : JLabel
+  -utilisationValue : JLabel
+  -gpuStatus : JLabel[]
+  -gpuJobs : JLabel[]
+  -gpuStudents : JLabel[]
+  -gpuRemaining : JLabel[]
+  -gpuFinish : JLabel[]
+  -activeModel : DefaultTableModel
+  -completedModel : DefaultTableModel
+  -allowanceModel : DefaultTableModel
+  +AdminDashboardPanel(system : GpuSystem)
+  -createSummaryRow() : JPanel
+  -createGpuRow() : JPanel
+  -createGpuCard(index : int) : JPanel
+  -addGpuRow(rows : JPanel, text : String) : JLabel
+  -createActiveJobsCard() : JPanel
+  -createBottomRow() : JPanel
+  +refresh()
+}
+class AdminJobsPanel <<extends JPanel>> {
+  -system : GpuSystem
+  -searchField : JTextField
+  -statusBox : JComboBox<String>
+  -searchButton : JButton
+  -showAllButton : JButton
+  -detailsButton : JButton
+  -cancelButton : JButton
+  -countLabel : JLabel
+  -model : DefaultTableModel
+  -table : JTable
+  -shownJobs : ArrayList<Job>
+  +AdminJobsPanel(system : GpuSystem)
+  -createSearchBar() : JPanel
+  -createButtonBar() : JPanel
+  +refresh()
+  +actionPerformed(event : ActionEvent)
+  -selectedJob() : Job
+  -showDetails()
+  -cancelSelectedJob()
+  -message(text : String)
+  -warn(text : String)
+}
+class AdminStudentsPanel <<extends JPanel>> {
+  -system : GpuSystem
+  -searchField : JTextField
+  -searchButton : JButton
+  -showAllButton : JButton
+  -studentModel : DefaultTableModel
+  -studentTable : JTable
+  -shownStudents : ArrayList<Student>
+  -jobsTitle : JLabel
+  -jobModel : DefaultTableModel
+  -jobTable : JTable
+  -actionsTitle : JLabel
+  -balanceLabel : JLabel
+  -grantMinutes : JTextField
+  -grantReason : JTextField
+  -newAllocation : JTextField
+  -allocationReason : JTextField
+  -grantButton : JButton
+  -allocationButton : JButton
+  -historyModel : DefaultListModel<String>
+  -selectedId : String
+  -refreshing : boolean
+  +AdminStudentsPanel(system : GpuSystem)
+  -createSearchBar() : JPanel
+  -createDetailRow() : JPanel
+  -createActionsCard() : JPanel
+  +refresh()
+  -indexOf(studentId : String) : int
+  -showSelectedStudent()
+  +valueChanged(event : ListSelectionEvent)
+  +actionPerformed(event : ActionEvent)
+  -grantExtraTime()
+  -changeAllocation()
+  -readWholeNumber(field : JTextField, name : String) : int
+  -message(text : String)
+  -warn(text : String)
+}
+class StudentQueuePanel <<extends JPanel>> {
+  -system : GpuSystem
+  -studentId : String
+  -waitingValue : JLabel
+  -runningValue : JLabel
+  -completedValue : JLabel
+  -cancelledValue : JLabel
+  -availableValue : JLabel
+  -nextLabel : JLabel
+  -searchField : JTextField
+  -statusBox : JComboBox<String>
+  -searchButton : JButton
+  -showAllButton : JButton
+  -detailsButton : JButton
+  -model : DefaultTableModel
+  -table : JTable
+  -shownJobs : ArrayList<Job>
+  +StudentQueuePanel(system : GpuSystem, studentId : String)
+  -createSummaryRow() : JPanel
+  -createSearchBar() : JPanel
+  +refresh()
+  -describeNextStart() : String
+  -selectedJob() : Job
+  +actionPerformed(event : ActionEvent)
+}
+class UiStyle {
+  {static} +BACKGROUND : Color
+  {static} +HEADING : Color
+  {static} +BUTTON : Color
+  {static} +CARD : Color
+  {static} +BORDER : Color
+  {static} +BUTTON_BORDER : Color
+  {static} +GRID : Color
+  {static} +GREEN_BUTTON : Color
+  {static} +RED_BUTTON : Color
+  {static} +MUTED_TEXT : Color
+  {static} +TITLE_FONT : Font
+  {static} +SUBTITLE_FONT : Font
+  {static} +SECTION_FONT : Font
+  {static} +LABEL_FONT : Font
+  {static} +TEXT_FONT : Font
+  {static} +SMALL_FONT : Font
+  {static} +TABLE_FONT : Font
+  {static} +HEADER_FONT : Font
+  {static} +NUMBER_FONT : Font
+  {static} +COMPACT_TABLE_FONT : Font
+  {static} -TIME_ONLY : DateTimeFormatter
+  {static} -DAY_AND_TIME : DateTimeFormatter
+  -UiStyle()
+  {static} +installDefaults()
+  {static} +button(text : String, listener : ActionListener) : JButton
+  {static} +button(text : String, colour : Color, listener : ActionListener) : JButton
+  {static} +label(text : String) : JLabel
+  {static} +sectionLabel(text : String) : JLabel
+  {static} +mutedLabel(text : String) : JLabel
+  {static} +cardBorder(padding : int) : Border
+  {static} +card(title : String) : JPanel
+  {static} +statCard(title : String, value : JLabel) : JPanel
+  {static} +tableModel(columns : String[]) : DefaultTableModel
+  {static} +table(model : DefaultTableModel) : JTable
+  {static} +styleTable(table : JTable)
+  {static} +makeCompact(table : JTable)
+  {static} +setColumnWidths(table : JTable, widths : int[])
+  {static} +scroll(component : Component) : JScrollPane
+  {static} +applyBackground(component : Component)
+  {static} +showText(parent : Component, title : String, text : String)
+  {static} +shortTime(time : LocalDateTime, clock : SimulationClock) : String
+  {static} +shortTime(time : String, clock : SimulationClock) : String
+}
+}
+package "Related classes (see their own diagrams)" <<Rectangle>> {
+class AccountsGUI <<JFrame>>
+hide AccountsGUI members
+class GpuSystem
+hide GpuSystem members
+interface SystemChangeListener
+hide SystemChangeListener members
+class StudentDashboardPanel <<JPanel>>
+hide StudentDashboardPanel members
+class SchedulerMonitorPanel <<JPanel>>
+hide SchedulerMonitorPanel members
+}
+MainApp ..> GpuSystem : opens
+MainApp ..> MainFrame : shows
+AccountsGUI <|-- MainFrame
+SystemChangeListener <|.. MainFrame
+MainFrame --> "1" GpuSystem : system
+MainFrame *-- AdminDashboardPanel
+MainFrame *-- AdminJobsPanel
+MainFrame *-- AdminStudentsPanel
+MainFrame *-- StudentQueuePanel
+MainFrame *-- "2" ClockPanel
+MainFrame *-- StudentDashboardPanel
+MainFrame *-- SchedulerMonitorPanel
+AdminDashboardPanel --> "1" GpuSystem : system
+AdminJobsPanel --> "1" GpuSystem : system
+AdminStudentsPanel --> "1" GpuSystem : system
+StudentQueuePanel --> "1" GpuSystem : system
+ClockPanel --> "1" GpuSystem : system
+@enduml

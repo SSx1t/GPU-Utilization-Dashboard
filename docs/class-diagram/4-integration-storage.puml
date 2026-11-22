@@ -1,0 +1,222 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam nodesep 35
+skinparam ranksep 45
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #234164
+  HeaderBackgroundColor #CDDEF0
+  ArrowColor #234164
+  FontStyle bold
+}
+skinparam package {
+  BackgroundColor #EBF2FA
+  BorderColor #96AABE
+  FontColor #234164
+  FontSize 14
+}
+skinparam titleFontSize 16
+skinparam titleFontColor #234164
+title Integration and storage (Person 4): attributes and methods
+package "Integration and storage (Person 4)" <<Rectangle>> {
+class GpuSystem {
+  {static} +ACCOUNTS_FILE : String
+  {static} +SIMULATION_FILE : String
+  {static} +MAX_GRANT_MINUTES : int
+  {static} +MAX_ALLOCATION : int
+  {static} +MAX_REASON_LENGTH : int
+  -folder : File
+  -accounts : AccountManager
+  -clock : SimulationClock
+  -scheduler : Scheduler
+  -jobs : IntegratedJobManager
+  -storage : StorageManager
+  -listeners : ArrayList<SystemChangeListener>
+  -saveError : String
+  +GpuSystem(folderName : String)
+  +getAccountManager() : AccountManager
+  +getJobManager() : IntegratedJobManager
+  +getScheduler() : Scheduler
+  +getClock() : SimulationClock
+  +getAccountsFile() : File
+  +getSimulationFile() : File
+  +getDataFolder() : String
+  +addChangeListener(listener : SystemChangeListener)
+  +removeChangeListener(listener : SystemChangeListener)
+  +systemChanged(change : String)
+  +save()
+  +takeSaveError() : String
+  +accountsChanged()
+  +syncAllowances()
+  -checkStudentsExist()
+  +getStudents() : ArrayList<Student>
+  +getAllowance(studentId : String) : TimeAllowance
+  +countRequests(status : String) : int
+  +initialiseClock(start : LocalDateTime)
+  +advanceMinute()
+  +cancelJobAsAdmin(jobId : int, reason : String) : String
+  +grantExtraTime(studentId : String, minutes : int, reason : String) : String
+  +changeAllocation(studentId : String, newAllocation : int, reason : String) : String
+  -requireAdmin()
+  -findAllowanceOrFail(studentId : String) : TimeAllowance
+  -checkReason(reason : String) : String
+  -recordTime() : String
+  +searchJobs(keyword : String, status : String) : ArrayList<Job>
+  +searchStudentJobs(studentId : String, keyword : String, status : String) : ArrayList<Job>
+  +searchStudents(idText : String) : ArrayList<Student>
+  -filterJobs(list : ArrayList<Job>, keyword : String, status : String) : ArrayList<Job>
+  -matches(job : Job, word : String) : boolean
+  -isWholeNumber(text : String) : boolean
+  +getAllJobs() : ArrayList<Job>
+  +getStudentJobs(studentId : String) : ArrayList<Job>
+  +findJob(jobId : int) : Job
+  +countJobs(status : String) : int
+  +getBusyGpuCount() : int
+  +getUtilisationText() : String
+  +getActiveJobs() : ArrayList<JobInfo>
+  +getCompletedJobs() : ArrayList<JobInfo>
+  +describeJobs(list : ArrayList<Job>) : ArrayList<JobInfo>
+  +describeJob(job : Job) : JobInfo
+  -predictionsById() : HashMap<Integer, QueuePrediction>
+  -describe(job : Job, predictions : HashMap<Integer, QueuePrediction>) : JobInfo
+  -parse(time : String) : LocalDateTime
+  -minutesBetween(from : LocalDateTime, to : LocalDateTime) : int
+}
+class IntegratedJobManager {
+  {static} +MAX_TITLE_LENGTH : int
+  {static} +MAX_APPLICATION_LENGTH : int
+  {static} +MAX_DESCRIPTION_LENGTH : int
+  {static} +MAX_REASON_LENGTH : int
+  -scheduler : Scheduler
+  -changeListener : SystemChangeListener
+  +IntegratedJobManager(scheduler : Scheduler)
+  +getScheduler() : Scheduler
+  +setChangeListener(changeListener : SystemChangeListener)
+  +submitJob(studentId : String, title : String, applicationName : String, description : String, taskSize : String, submissionTime : String) : Job
+  +cancelJob(jobId : int, cancelledBy : String, reason : String, cancellationTime : String, elapsedRuntime : int) : boolean
+  +completeJob(jobId : int, finishTime : String) : boolean
+  +onJobCompleted(job : Job, runtimeMinutes : int)
+  +onRunningCancelled(job : Job, runtimeMinutes : int)
+  +onQueuedCancelled(job : Job)
+  -settle(job : Job, runtimeMinutes : int)
+  -checkJobText(title : String, applicationName : String, description : String) : String
+  -describeSubmission(job : Job) : String
+  -notifyChange(change : String)
+}
+interface SystemChangeListener {
+  +systemChanged(change : String)
+}
+class StorageManager {
+  {static} +HEADER : String
+  {static} -SECTIONS : String[]
+  {static} -UTF8 : Charset
+  {static} -NEW_LINE : String
+  -filename : String
+  +StorageManager(filename : String)
+  +getFilename() : String
+  +fileExists() : boolean
+  +save(clock : SimulationClock, scheduler : Scheduler, jobs : JobManager)
+  -replaceFile(temp : File, target : File)
+  -createText(clock : SimulationClock, scheduler : Scheduler, jobs : JobManager) : String
+  -line(out : StringBuilder, text : String)
+  -timeOrDash(time : String) : String
+  {static} ~escape(text : String) : String
+  {static} ~unescape(text : String) : String
+  +load(clock : SimulationClock, scheduler : Scheduler, jobs : JobManager)
+  -readJob(row : StorageManager.Row, id : int, allowances : HashMap<String, TimeAllowance>, cancellations : HashMap<Integer, StorageManager.Row>, gpuRows : StorageManager.Row[], now : LocalDateTime, minutesRun : HashMap<Integer, Integer>) : Job
+  -readLines(file : File) : ArrayList<String>
+  -readSections(lines : ArrayList<String>) : HashMap<String, ArrayList<StorageManager.Row>>
+  -isSection(name : String) : boolean
+  -findIn(list : ArrayList<Job>, jobId : int) : Job
+  -checkFieldCount(row : StorageManager.Row, count : int)
+  -readText(row : StorageManager.Row, index : int) : String
+  -readRequiredText(row : StorageManager.Row, index : int, name : String) : String
+  -readNumber(row : StorageManager.Row, index : int) : int
+  -readPositive(row : StorageManager.Row, index : int) : int
+  -readGpu(row : StorageManager.Row) : int
+  -readBoolean(row : StorageManager.Row, index : int) : boolean
+  -readTime(row : StorageManager.Row, index : int) : LocalDateTime
+  -readOptionalTime(row : StorageManager.Row, index : int) : LocalDateTime
+  -expect(row : StorageManager.Row, condition : boolean, message : String)
+  -error(lineNumber : int, message : String) : StorageException
+  -error(row : StorageManager.Row, message : String) : StorageException
+  -explain(e : IOException) : String
+}
+class StorageException <<extends Exception>> {
+  +StorageException(message : String)
+}
+class JobInfo {
+  -job : Job
+  -queuePosition : int
+  -start : LocalDateTime
+  -finish : LocalDateTime
+  -predicted : boolean
+  -remainingWait : int
+  -queueWait : int
+  -runtime : int
+  -remainingRuntime : int
+  +JobInfo(job : Job, queuePosition : int, start : LocalDateTime, finish : LocalDateTime, predicted : boolean, remainingWait : int, queueWait : int, runtime : int, remainingRuntime : int)
+  +getJob() : Job
+  +getQueuePosition() : int
+  +getStart() : LocalDateTime
+  +getFinish() : LocalDateTime
+  +isPredicted() : boolean
+  +getRemainingWait() : int
+  +getQueueWait() : int
+  +getRuntime() : int
+  +getRemainingRuntime() : int
+  +isQueued() : boolean
+  +isRunning() : boolean
+  +isCancelledInQueue() : boolean
+  +getJobLabel() : String
+  +getGpuText() : String
+  +getPositionText() : String
+  +getDurationText() : String
+  +getStartText() : String
+  +getFinishText() : String
+  +getRemainingWaitText() : String
+  +getQueueWaitText() : String
+  +getRuntimeText() : String
+  +getChargedText() : String
+  +describe() : String
+}
+}
+package "Related classes (see their own diagrams)" <<Rectangle>> {
+class AccountManager
+hide AccountManager members
+class JobManager
+hide JobManager members
+class Scheduler
+hide Scheduler members
+class SimulationClock
+hide SimulationClock members
+interface SchedulerListener
+hide SchedulerListener members
+class Job
+hide Job members
+class MainFrame
+hide MainFrame members
+}
+JobManager <|-- IntegratedJobManager
+SchedulerListener <|.. IntegratedJobManager
+IntegratedJobManager --> "1" Scheduler : scheduler
+IntegratedJobManager --> "0..1" SystemChangeListener : changeListener
+SystemChangeListener <|.. GpuSystem
+GpuSystem --> "1" AccountManager : accounts
+GpuSystem --> "1" IntegratedJobManager : jobs
+GpuSystem --> "1" Scheduler : scheduler
+GpuSystem --> "1" SimulationClock : clock
+GpuSystem --> "1" StorageManager : storage
+GpuSystem o-- "*" SystemChangeListener : listeners
+GpuSystem ..> JobInfo : creates
+JobInfo --> "1" Job : job
+StorageManager ..> StorageException : throws
+StorageManager ..> SimulationClock : saves / restores
+StorageManager ..> Scheduler : saves / restores
+StorageManager ..> JobManager : saves / restores
+SystemChangeListener <|.. MainFrame
+MainFrame --> "1" GpuSystem : system
+@enduml

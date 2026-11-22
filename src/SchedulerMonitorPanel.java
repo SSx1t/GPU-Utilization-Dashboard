@@ -110,7 +110,8 @@ public class SchedulerMonitorPanel extends JPanel implements ActionListener {
         for (int i = 0; i < preds.size(); i++) {
             QueuePrediction p = preds.get(i);
             Job j = p.getJob();
-            w.append(String.format("%-6s %-8s %-16s %-10d %-9d %-18s %-9d%n",
+            // %-16.16s cuts long application names so the columns stay aligned.
+            w.append(String.format("%-6s %-8s %-16.16s %-10d %-9d %-18s %-9d%n",
                     "J" + j.getJobId(), j.getStudentId(), j.getApplicationName(),
                     j.getEstimatedDuration(), p.getPosition(),
                     SimulationClock.format(p.getPredictedStart()),
