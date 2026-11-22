@@ -29,6 +29,11 @@ public class JobManager {
         return lastMessage;
     }
 
+    // Lets a subclass (IntegratedJobManager) report its own message.
+    protected void setLastMessage(String message) {
+        lastMessage = message;
+    }
+
     public boolean addStudentAllowance(TimeAllowance allowance) {
 
         if (allowance == null) {
