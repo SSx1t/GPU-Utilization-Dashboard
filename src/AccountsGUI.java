@@ -7,8 +7,8 @@ public class AccountsGUI extends JFrame implements ActionListener {
     private static final long serialVersionUID = 1L;
 
     private AccountManager manager;
-
-    // Person 2: Add the JobManager and StudentDashboardPanel fields here.
+    private JobManager jobManager;
+    private StudentDashboardPanel studentDashboard;
 
     // Basic interface colors.
     private final Color background = new Color(235, 242, 250);
@@ -37,11 +37,9 @@ public class AccountsGUI extends JFrame implements ActionListener {
     private JPanel adminPanel;
 
     // Creates the window and its panels.
-    public AccountsGUI(AccountManager manager) {
+    public AccountsGUI(AccountManager manager, JobManager jobManager) {
         this.manager = manager;
-
-        // Person 2: Add a JobManager constructor parameter and store it here.
-        // Use the same JobManager throughout the application.
+        this.jobManager = jobManager;
 
         setTitle("GPU Accounts and Registration");
         setSize(1050, 700);
@@ -196,13 +194,17 @@ public class AccountsGUI extends JFrame implements ActionListener {
             requests.setText(manager.getRequestSummary());
             showPanel(adminPanel);
         } else {
-            JPanel panel = createPage("Student Account");
+            Student student = (Student) user;
 
-            // Person 2: Replace the temporary label below with StudentDashboardPanel.
-            //Add the dashboard and integrate with original plan 
+            // Do not reset an existing allowance when the student logs in.
+            if (jobManager.findAllowance(student.getUsername()) == null) {
+                jobManager.addStudentAllowance(student.getTimeAllowance());
+            }
 
-            JLabel information = new JLabel("Login successful. The job dashboard is not available yet.", SwingConstants.CENTER);
-            panel.add(information, BorderLayout.CENTER);
+            studentDashboard = new StudentDashboardPanel(student.getUsername(), jobManager);
+
+            JPanel panel = createPage("Student Dashboard");
+            panel.add(studentDashboard, BorderLayout.CENTER);
 
             JPanel controls = new JPanel(new FlowLayout(FlowLayout.RIGHT));
             controls.setBackground(background);
@@ -275,7 +277,7 @@ public class AccountsGUI extends JFrame implements ActionListener {
                 requests.setText(manager.getRequestSummary());
 
             } else if (command.equals("Logout")) {
-                // End the session and return to login.
+                // End the session without resetting the job manager.
                 manager.logout();
                 username.setText("");
                 showPanel(loginPanel);
@@ -303,11 +305,8 @@ public class AccountsGUI extends JFrame implements ActionListener {
         public void run() {
             try {
                 AccountManager manager = new AccountManager("accounts.txt");
-
-                // Person 2: Create the shared JobManager here and pass it to
-                // AccountsGUI after adding the second constructor parameter.
-
-                AccountsGUI window = new AccountsGUI(manager);
+                JobManager jobManager = new JobManager();
+                AccountsGUI window = new AccountsGUI(manager, jobManager);
                 window.setVisible(true);
 
             } catch (Exception e) {
