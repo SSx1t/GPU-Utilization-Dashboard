@@ -139,17 +139,6 @@ public class AccountsGUI extends JFrame implements ActionListener {
         requests.getColumnModel().getColumn(4).setPreferredWidth(100);
         requests.getColumnModel().getColumn(5).setPreferredWidth(110);
 
-        // Selecting a row fills in the Request ID field.
-        requests.getSelectionModel().addListSelectionListener(event -> {
-            if (!event.getValueIsAdjusting()) {
-                int row = requests.getSelectedRow();
-
-                if (row >= 0) {
-                    requestId.setText(requests.getValueAt(row, 0).toString());
-                }
-            }
-        });
-
         adminPanel.add(new JScrollPane(requests), BorderLayout.CENTER);
 
         // Keep the input fields and buttons on separate rows.
