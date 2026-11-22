@@ -2,6 +2,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 
 public class AccountsGUI extends JFrame implements ActionListener {
     private static final long serialVersionUID = 1L;
@@ -30,7 +31,18 @@ public class AccountsGUI extends JFrame implements ActionListener {
     // Administrator approval fields.
     private JTextField requestId = new JTextField(12);
     private JTextField minutes = new JTextField("100", 5);
-    private JTextArea requests = new JTextArea();
+
+    // Stores registration requests in a table that cannot be edited directly.
+    private DefaultTableModel requestsModel = new DefaultTableModel(new String[]{"University ID", "Name", "Email", "Phone", "Status", "Initial minutes"}, 0) {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return false;
+        }
+    };
+
+    private JTable requests = new JTable(requestsModel);
 
     private JPanel loginPanel;
     private JPanel registrationPanel;
@@ -107,12 +119,25 @@ public class AccountsGUI extends JFrame implements ActionListener {
 
         registrationPanel.add(registrationArea, BorderLayout.CENTER);
 
-        // Administrator request list.
+        // Administrator request table.
         adminPanel = createPage("Administrator - Registration Requests");
 
-        requests.setEditable(false);
-        requests.setFont(new Font("Monospaced", Font.PLAIN, 13));
-        requests.setMargin(new Insets(10, 10, 10, 10));
+        requests.setRowHeight(28);
+        requests.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        requests.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 13));
+        requests.getTableHeader().setReorderingAllowed(false);
+        requests.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        requests.setFillsViewportHeight(true);
+        requests.setBackground(Color.WHITE);
+        requests.setGridColor(new Color(210, 220, 230));
+
+        // Give the name and email columns more space.
+        requests.getColumnModel().getColumn(0).setPreferredWidth(120);
+        requests.getColumnModel().getColumn(1).setPreferredWidth(160);
+        requests.getColumnModel().getColumn(2).setPreferredWidth(220);
+        requests.getColumnModel().getColumn(3).setPreferredWidth(120);
+        requests.getColumnModel().getColumn(4).setPreferredWidth(100);
+        requests.getColumnModel().getColumn(5).setPreferredWidth(110);
 
         adminPanel.add(new JScrollPane(requests), BorderLayout.CENTER);
 
@@ -186,12 +211,38 @@ public class AccountsGUI extends JFrame implements ActionListener {
         JOptionPane.showMessageDialog(this, text);
     }
 
+    // Converts the existing pipe-separated request summary into table rows.
+    private void refreshRequests() throws AccountException {
+        String summary = manager.getRequestSummary();
+
+        requestsModel.setRowCount(0);
+        requestId.setText("");
+
+        for (String line : summary.split("\\R")) {
+            String[] values = line.split("\\|", -1);
+
+            // Ignore blank lines or messages that are not request records.
+            if (values.length != 6) {
+                continue;
+            }
+
+            for (int i = 0; i < values.length; i++) {
+                values[i] = values[i].trim();
+            }
+
+            // Remove the label so the column contains only the minutes.
+            values[5] = values[5].replace("Initial minutes:", "").trim();
+
+            requestsModel.addRow(values);
+        }
+    }
+
     // Displays the appropriate panel after login.
     private void showAccount() throws AccountException {
         User user = manager.getCurrentUser();
 
         if (user instanceof Administrator) {
-            requests.setText(manager.getRequestSummary());
+            refreshRequests();
             showPanel(adminPanel);
         } else {
             Student student = (Student) user;
@@ -263,18 +314,18 @@ public class AccountsGUI extends JFrame implements ActionListener {
                 int allowance = Integer.parseInt(minutes.getText().trim());
 
                 manager.approve(requestId.getText().trim(), allowance);
-                requests.setText(manager.getRequestSummary());
+                refreshRequests();
 
                 message("Student approved.");
 
             } else if (command.equals("Reject")) {
                 manager.reject(requestId.getText().trim());
-                requests.setText(manager.getRequestSummary());
+                refreshRequests();
 
                 message("Request rejected.");
 
             } else if (command.equals("Refresh")) {
-                requests.setText(manager.getRequestSummary());
+                refreshRequests();
 
             } else if (command.equals("Logout")) {
                 // End the session without resetting the job manager.
