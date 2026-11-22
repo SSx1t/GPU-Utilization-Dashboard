@@ -1,0 +1,110 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam nodesep 35
+skinparam ranksep 45
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #234164
+  HeaderBackgroundColor #CDDEF0
+  ArrowColor #234164
+  FontStyle bold
+}
+skinparam package {
+  BackgroundColor #EBF2FA
+  BorderColor #96AABE
+  FontColor #234164
+  FontSize 14
+}
+skinparam titleFontSize 16
+skinparam titleFontColor #234164
+title Accounts and registration (Person 1): attributes and methods
+package "Accounts (Person 1)" <<Rectangle>> {
+abstract class User {
+  -username : String
+  -name : String
+  -password : String
+  +User(username : String, name : String, password : String)
+  +getUsername() : String
+  +getName() : String
+  +checkPassword(value : String) : boolean
+  {abstract} +getRole() : String
+}
+class Student {
+  -email : String
+  -phone : String
+  -initialMinutes : int
+  -timeAllowance : TimeAllowance
+  +Student(request : AccessRequest)
+  +getEmail() : String
+  +getPhone() : String
+  +getInitialMinutes() : int
+  +getTimeAllowance() : TimeAllowance
+  +setTimeAllowance(timeAllowance : TimeAllowance)
+  +getRole() : String
+}
+class Administrator {
+  +Administrator()
+  +getRole() : String
+}
+class AccessRequest {
+  -id : String
+  -name : String
+  -email : String
+  -phone : String
+  -password : String
+  -status : String
+  -minutes : int
+  +AccessRequest(id : String, name : String, email : String, phone : String, password : String)
+  +getId() : String
+  +getName() : String
+  +getEmail() : String
+  +getPhone() : String
+  +getPassword() : String
+  +getStatus() : String
+  +getMinutes() : int
+  ~setDecision(status : String, minutes : int)
+}
+class AccountManager {
+  -users : ArrayList<User>
+  -requests : ArrayList<AccessRequest>
+  -currentUser : User
+  -filename : String
+  +AccountManager(filename : String)
+  -validate(id : String, name : String, email : String, phone : String, password : String)
+  -findRequest(id : String) : AccessRequest
+  +register(id : String, name : String, email : String, phone : String, password : String)
+  +login(username : String, password : String) : User
+  +logout()
+  +getCurrentUser() : User
+  +getStudents() : ArrayList<Student>
+  +findStudent(id : String) : Student
+  +getRequests() : ArrayList<AccessRequest>
+  -requireAdmin()
+  +getRequestSummary() : String
+  +approve(id : String)
+  +approve(id : String, minutes : int)
+  +reject(id : String)
+  -decide(id : String, approve : boolean, minutes : int)
+  -save()
+  -readLine(input : Scanner) : String
+  -load()
+}
+class AccountException <<extends Exception>> {
+  +AccountException(message : String)
+}
+}
+package "Related classes (see their own diagrams)" <<Rectangle>> {
+class TimeAllowance
+hide TimeAllowance members
+}
+User <|-- Student
+User <|-- Administrator
+Student --> "1" TimeAllowance : timeAllowance
+Student ..> AccessRequest : created from
+AccountManager "1" o-- "*" User : users
+AccountManager "1" o-- "*" AccessRequest : requests
+AccountManager ..> AccountException : throws
+@enduml

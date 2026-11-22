@@ -1,1 +1,6 @@
 /bin/
+/out/
+
+# Data written while the program runs (the system starts empty)
+/data/
+*.tmp

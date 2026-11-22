@@ -4,16 +4,18 @@ import java.io.IOException;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
+// Some members are protected (not private) so that MainFrame can extend this window
+// and reuse the login, registration and request screens.
 public class AccountsGUI extends JFrame implements ActionListener {
     private static final long serialVersionUID = 1L;
 
-    private AccountManager manager;
-    private JobManager jobManager;
+    protected AccountManager manager;
+    protected JobManager jobManager;
     private StudentDashboardPanel studentDashboard;
 
     // Basic interface colors.
-    private final Color background = new Color(235, 242, 250);
-    private final Color headingColor = new Color(35, 65, 100);
+    protected final Color background = new Color(235, 242, 250);
+    protected final Color headingColor = new Color(35, 65, 100);
     private final Color buttonColor = new Color(205, 222, 240);
 
     // Login fields.
@@ -46,7 +48,7 @@ public class AccountsGUI extends JFrame implements ActionListener {
 
     private JPanel loginPanel;
     private JPanel registrationPanel;
-    private JPanel adminPanel;
+    protected JPanel adminPanel;
 
     // Creates the window and its panels.
     public AccountsGUI(AccountManager manager, JobManager jobManager) {
@@ -200,7 +202,7 @@ public class AccountsGUI extends JFrame implements ActionListener {
     }
 
     // Changes the displayed panel and refreshes the window.
-    private void showPanel(JPanel panel) {
+    protected void showPanel(JPanel panel) {
         setContentPane(panel);
         revalidate();
         repaint();
@@ -212,7 +214,7 @@ public class AccountsGUI extends JFrame implements ActionListener {
     }
 
     // Converts the existing pipe-separated request summary into table rows.
-    private void refreshRequests() throws AccountException {
+    protected void refreshRequests() throws AccountException {
         String summary = manager.getRequestSummary();
 
         requestsModel.setRowCount(0);
@@ -237,8 +239,8 @@ public class AccountsGUI extends JFrame implements ActionListener {
         }
     }
 
-    // Displays the appropriate panel after login.
-    private void showAccount() throws AccountException {
+    // Displays the appropriate panel after login. MainFrame overrides this method.
+    protected void showAccount() throws AccountException {
         User user = manager.getCurrentUser();
 
         if (user instanceof Administrator) {
